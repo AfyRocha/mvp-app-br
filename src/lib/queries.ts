@@ -115,11 +115,8 @@ export async function createProvider(input: {
 export async function updateProvider(
   id: string,
   patch: Partial<
-    Pick<
-      Provider,
-      'nome_negocio' | 'categoria' | 'bio' | 'cidade_principal' | 'cidades_atendidas' | 'whatsapp'
-    >
-  >
+    Pick<Provider, 'nome_negocio' | 'bio' | 'cidade_principal' | 'cidades_atendidas' | 'whatsapp'>
+  > & { categoria?: string }
 ) {
   const { error } = await supabase.from('providers').update(patch).eq('id', id);
   if (error) throw error;
