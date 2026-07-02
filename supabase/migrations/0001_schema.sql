@@ -32,6 +32,9 @@ create table public.providers (
   cidade_principal text not null,
   cidades_atendidas text[] not null default '{}',
   whatsapp text not null,
+  servicos text[] not null default '{}',
+  -- cor do avatar (hex), como no protótipo
+  cor text,
   verificado boolean not null default false,
   plano text not null default 'free' check (plano in ('free', 'destaque')),
   desde int,

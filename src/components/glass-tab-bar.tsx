@@ -1,57 +1,61 @@
 import type { BottomTabBarProps } from 'expo-router/tabs';
 import { BlurView } from 'expo-blur';
-import { Megaphone, Search, UserRound } from 'lucide-react-native';
+import { House, Megaphone, UserRound } from 'lucide-react-native';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, fonts, glass, radius, shadows } from '@/theme';
+import { colors, fonts, glass } from '@/theme';
 
-const TAB_META: Record<string, { label: string; Icon: typeof Search }> = {
-  index: { label: 'Buscar', Icon: Search },
+const TAB_META: Record<string, { label: string; Icon: typeof House }> = {
+  index: { label: 'Início', Icon: House },
   anunciar: { label: 'Anunciar', Icon: Megaphone },
   perfil: { label: 'Perfil', Icon: UserRound },
 };
 
-/** Navegação inferior flutuante em vidro, como no protótipo. */
+const blurMethod = Platform.OS === 'android' ? ('dimezisBlurView' as const) : undefined;
+
+/** Navegação inferior — barra de vidro flutuante, fiel ao protótipo. */
 export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
   return (
     <View style={[styles.wrapper, { bottom: Math.max(insets.bottom, 12) }]} pointerEvents="box-none">
-      <BlurView intensity={glass.blur * 2} tint="light" style={styles.bar}>
-        {state.routes.map((route, index) => {
-          const meta = TAB_META[route.name];
-          if (!meta) return null;
-          const focused = state.index === index;
-          const { Icon } = meta;
+      <View style={styles.clipper}>
+        <BlurView intensity={16} tint="light" experimentalBlurMethod={blurMethod} style={styles.bar}>
+          {state.routes.map((route, index) => {
+            const meta = TAB_META[route.name];
+            if (!meta) return null;
+            const ativa = state.index === index;
+            const { Icon } = meta;
 
-          return (
-            <Pressable
-              key={route.key}
-              accessibilityRole="button"
-              accessibilityState={focused ? { selected: true } : {}}
-              onPress={() => {
-                const event = navigation.emit({
-                  type: 'tabPress',
-                  target: route.key,
-                  canPreventDefault: true,
-                });
-                if (!focused && !event.defaultPrevented) {
-                  navigation.navigate(route.name);
-                }
-              }}
-              style={[styles.tab, focused && styles.tabActive]}
-            >
-              <Icon
-                size={20}
-                color={focused ? colors.white : colors.gray}
-                strokeWidth={focused ? 2.4 : 2}
-              />
-              <Text style={[styles.label, focused && styles.labelActive]}>{meta.label}</Text>
-            </Pressable>
-          );
-        })}
-      </BlurView>
+            return (
+              <Pressable
+                key={route.key}
+                accessibilityRole="button"
+                accessibilityState={ativa ? { selected: true } : {}}
+                onPress={() => {
+                  const event = navigation.emit({
+                    type: 'tabPress',
+                    target: route.key,
+                    canPreventDefault: true,
+                  });
+                  if (!ativa && !event.defaultPrevented) {
+                    navigation.navigate(route.name);
+                  }
+                }}
+                style={[styles.tab, ativa && styles.tabAtiva]}
+              >
+                <Icon
+                  size={21}
+                  color={ativa ? colors.green : colors.gray}
+                  strokeWidth={ativa ? 2.4 : 1.9}
+                />
+                <Text style={[styles.label, ativa && styles.labelAtiva]}>{meta.label}</Text>
+              </Pressable>
+            );
+          })}
+        </BlurView>
+      </View>
     </View>
   );
 }
@@ -59,38 +63,46 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
-    left: 20,
-    right: 20,
+    left: 16,
+    right: 16,
     alignItems: 'center',
+  },
+  clipper: {
+    width: '100%',
+    maxWidth: 448,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: glass.border,
+    overflow: 'hidden',
+    shadowColor: colors.ink,
+    shadowOpacity: 0.14,
+    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
   },
   bar: {
     flexDirection: 'row',
-    gap: 6,
-    padding: 8,
-    borderRadius: radius.chip,
-    borderWidth: 1,
-    borderColor: glass.border,
-    backgroundColor: Platform.OS === 'android' ? glass.surfaceStrong : glass.surface,
-    overflow: 'hidden',
-    ...shadows.floating,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    backgroundColor: glass.navBar,
   },
   tab: {
-    flexDirection: 'row',
+    flex: 1,
     alignItems: 'center',
-    gap: 7,
-    paddingVertical: 11,
-    paddingHorizontal: 18,
-    borderRadius: radius.chip,
+    gap: 3,
+    borderRadius: 18,
+    paddingVertical: 8,
   },
-  tabActive: {
-    backgroundColor: colors.green,
+  tabAtiva: {
+    backgroundColor: 'rgba(20,99,75,0.10)',
   },
   label: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 13,
+    fontFamily: fonts.bodyMedium,
+    fontSize: 11.5,
     color: colors.gray,
   },
-  labelActive: {
-    color: colors.white,
+  labelAtiva: {
+    fontFamily: fonts.bodyBold,
+    color: colors.green,
   },
 });

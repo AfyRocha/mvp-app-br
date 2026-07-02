@@ -8,6 +8,10 @@ export const colors = {
   green: '#14634B',
   /** verde-escuro — fundos profundos e degradês do cabeçalho */
   greenDark: '#0C3D2E',
+  /** verde-claro — início do degradê radial do cabeçalho */
+  greenLight: '#1E7F62',
+  /** texto/ícones sobre o verde do cabeçalho */
+  onGreen: '#EAF5F0',
   /** tinta — texto principal */
   ink: '#101B16',
   /** amarelo — destaque da marca e selo Verificado */
@@ -25,8 +29,9 @@ export const colors = {
 
 /** Superfícies de vidro (glassmorphism): rgba branco + blur + borda clara */
 export const glass = {
-  surface: 'rgba(255,255,255,0.72)',
+  surface: 'rgba(255,255,255,0.62)',
   surfaceStrong: 'rgba(255,255,255,0.88)',
+  navBar: 'rgba(255,255,255,0.72)',
   /** vidro sobre o degradê verde do cabeçalho */
   onGreen: 'rgba(255,255,255,0.14)',
   onGreenBorder: 'rgba(255,255,255,0.28)',

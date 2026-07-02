@@ -33,6 +33,8 @@ export interface Provider {
   cidade_principal: string;
   cidades_atendidas: string[];
   whatsapp: string;
+  servicos: string[];
+  cor: string | null;
   verificado: boolean;
   plano: 'free' | 'destaque';
   desde: number | null;
