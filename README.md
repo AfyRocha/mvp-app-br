@@ -1,56 +1,67 @@
-# Welcome to your Expo app 👋
+# tem brasileiro
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Diretório mobile de prestadores de serviços brasileiros nos EUA. Clientes buscam por categoria e cidade e chamam direto no WhatsApp. MVP sem pagamentos — monetização futura via plano **Destaque** para prestadores.
 
-## Get started
+**Stack:** Expo (React Native + TypeScript) · Expo Router · Supabase (Postgres, Auth, Storage) · expo-blur (glassmorphism) · lucide (ícones).
 
-1. Install dependencies
+## 1. Configurar o Supabase
 
-   ```bash
-   npm install
-   ```
+1. Crie um projeto grátis em [supabase.com](https://supabase.com).
+2. No **SQL Editor**, rode o conteúdo de:
+   1. `supabase/migrations/0001_schema.sql` (tabelas, RLS, views, Storage)
+   2. `supabase/seed.sql` (8 categorias + 5 prestadores de exemplo com avaliações)
+3. (Recomendado para o MVP) Em **Authentication → Sign In / Up → Email**, desative *Confirm email* para o cadastro entrar direto.
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## 2. Rodar o app
 
 ```bash
-npm run reset-project
+cp .env.example .env   # preencha com a URL e a anon key do projeto
+                       # (Dashboard → Project Settings → API)
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Escaneie o QR code com o app **Expo Go** ([iOS](https://apps.apple.com/app/expo-go/id982107779) / [Android](https://play.google.com/store/apps/details?id=host.exp.exponent)). Se o celular não estiver na mesma rede, use `npx expo start --tunnel`.
 
-### Other setup steps
+## 3. Aprovar prestadores (manual, sem painel admin)
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Novos cadastros entram com `aprovado = false` e não aparecem na busca. Para aprovar, rode no SQL Editor:
 
-## Learn more
+```sql
+-- listar pendentes
+select id, nome_negocio, cidade_principal, whatsapp
+from providers where aprovado = false;
 
-To learn more about developing your project with Expo, look at the following resources:
+-- aprovar
+update providers set aprovado = true where id = 'ID_AQUI';
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Extras administrativos:
 
-## Join the community
+```sql
+-- dar o selo Verificado (amarelo)
+update providers set verificado = true where id = 'ID_AQUI';
 
-Join our community of developers creating universal apps.
+-- ativar o plano Destaque (topo da busca)
+update providers set plano = 'destaque' where id = 'ID_AQUI';
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Regras de produto no MVP
+
+- Busca e perfis são públicos; **avaliar** e **anunciar** exigem login (e-mail/senha).
+- Ordenação da lista: plano `destaque` primeiro, depois nota média.
+- 1 avaliação por cliente por prestador (reenviar substitui a anterior).
+- Visualizações do perfil são contadas a cada abertura e exibidas ao prestador na aba Perfil.
+- Botão do WhatsApp abre `wa.me` com a mensagem "Olá! Te encontrei no tem brasileiro 👋".
+
+## Estrutura
+
+```
+src/app/            telas (Expo Router): (tabs)/, provider/[id], auth/login
+src/components/     UI do design system (vidro, chips, cards, tab bar…)
+src/lib/            client Supabase, auth context, queries, tipos
+src/theme.ts        tokens do protótipo (cores, fontes, raios, sombras)
+supabase/           migration + seed
+```
+
+A referência visual é o protótipo aprovado `tem-brasileiro-app.jsx` (glassmorphism, Bricolage Grotesque + Inter, verde `#14634B` / amarelo `#FFC942`).

@@ -42,30 +42,25 @@ export default function PerfilScreen() {
   const [bio, setBio] = useState('');
   const [salvando, setSalvando] = useState(false);
 
-  const carregar = useCallback(async () => {
-    if (!session) {
-      setProvider(null);
-      setCarregando(false);
-      return;
-    }
-    setCarregando(true);
-    try {
-      const [p, cats] = await Promise.all([fetchMyProvider(session.user.id), fetchCategories()]);
-      setCategorias(cats);
-      setProvider(p);
-      if (p) {
-        setNome(p.nome_negocio);
-        setCategoria(p.categoria);
-        setCidade(p.cidade_principal);
-        setCidadesAtendidas(p.cidades_atendidas.join(', '));
-        setWhatsapp(p.whatsapp);
-        setBio(p.bio ?? '');
-      }
-    } catch {
-      // sem conexão/config: mantém tela básica
-    } finally {
-      setCarregando(false);
-    }
+  const carregar = useCallback(() => {
+    if (!session) return Promise.resolve();
+    return Promise.all([fetchMyProvider(session.user.id), fetchCategories()])
+      .then(([p, cats]) => {
+        setCategorias(cats);
+        setProvider(p);
+        if (p) {
+          setNome(p.nome_negocio);
+          setCategoria(p.categoria);
+          setCidade(p.cidade_principal);
+          setCidadesAtendidas(p.cidades_atendidas.join(', '));
+          setWhatsapp(p.whatsapp);
+          setBio(p.bio ?? '');
+        }
+      })
+      .catch(() => {
+        // sem conexão/config: mantém tela básica
+      })
+      .finally(() => setCarregando(false));
   }, [session]);
 
   useEffect(() => {

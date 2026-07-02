@@ -47,12 +47,18 @@ export default function LoginScreen() {
         });
         if (error) throw error;
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password: senha,
           options: { data: { nome: nome.trim() } },
         });
         if (error) throw error;
+        if (!data.session) {
+          Alert.alert(
+            'Confirme seu e-mail',
+            'Enviamos um link de confirmação para o seu e-mail. Depois de confirmar, volte e entre.'
+          );
+        }
       }
       router.back();
     } catch (e) {

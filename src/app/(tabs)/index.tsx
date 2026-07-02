@@ -25,7 +25,7 @@ import { ProviderCard } from '@/components/provider-card';
 import { fetchCategories, fetchProviders } from '@/lib/queries';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import type { Category, ProviderWithRating } from '@/lib/types';
-import { colors, fonts, glass, radius } from '@/theme';
+import { colors, fonts, radius } from '@/theme';
 
 export default function InicioScreen() {
   const router = useRouter();
@@ -33,37 +33,38 @@ export default function InicioScreen() {
 
   const [categorias, setCategorias] = useState<Category[]>([]);
   const [prestadores, setPrestadores] = useState<ProviderWithRating[]>([]);
-  const [carregando, setCarregando] = useState(true);
+  const [carregando, setCarregando] = useState(isSupabaseConfigured);
   const [atualizando, setAtualizando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+  const [erroCarga, setErroCarga] = useState<string | null>(null);
+
+  const erro = isSupabaseConfigured
+    ? erroCarga
+    : 'Configure o Supabase no arquivo .env para ver os prestadores.';
 
   const [busca, setBusca] = useState('');
   const [catAtiva, setCatAtiva] = useState<string | null>(null);
   const [cidade, setCidade] = useState<string | null>(null);
   const [seletorCidade, setSeletorCidade] = useState(false);
 
-  async function carregar() {
-    if (!isSupabaseConfigured) {
-      setErro('Configure o Supabase no arquivo .env para ver os prestadores.');
-      setCarregando(false);
-      return;
-    }
-    try {
-      const [cats, provs] = await Promise.all([fetchCategories(), fetchProviders()]);
-      setCategorias(cats);
-      setPrestadores(provs);
-      setErro(null);
-    } catch (e) {
-      setErro(e instanceof Error ? e.message : 'Não foi possível carregar os prestadores.');
-    } finally {
-      setCarregando(false);
-      setAtualizando(false);
-    }
+  function carregar() {
+    if (!isSupabaseConfigured) return;
+    Promise.all([fetchCategories(), fetchProviders()])
+      .then(([cats, provs]) => {
+        setCategorias(cats);
+        setPrestadores(provs);
+        setErroCarga(null);
+      })
+      .catch((e) => {
+        setErroCarga(e instanceof Error ? e.message : 'Não foi possível carregar os prestadores.');
+      })
+      .finally(() => {
+        setCarregando(false);
+        setAtualizando(false);
+      });
   }
 
   useEffect(() => {
     carregar();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const cidades = useMemo(

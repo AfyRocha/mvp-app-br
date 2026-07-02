@@ -237,7 +237,7 @@ export default function ProviderScreen() {
 
               {reviews.map((r) => (
                 <View key={r.id} style={styles.reviewCard}>
-                  {!!r.texto && <Text style={styles.reviewTexto}>"{r.texto}"</Text>}
+                  {!!r.texto && <Text style={styles.reviewTexto}>“{r.texto}”</Text>}
                   <View style={styles.reviewRodape}>
                     <Stars nota={r.nota} size={11} />
                     <Text style={styles.reviewAutor}>

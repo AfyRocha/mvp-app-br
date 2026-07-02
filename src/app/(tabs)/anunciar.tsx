@@ -37,7 +37,7 @@ const MAX_FOTOS = 6;
 export default function AnunciarScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { session, profile, refreshProfile } = useAuth();
+  const { session, refreshProfile } = useAuth();
 
   const [categorias, setCategorias] = useState<Category[]>([]);
   const [jaTemAnuncio, setJaTemAnuncio] = useState(false);
@@ -58,10 +58,7 @@ export default function AnunciarScreen() {
   }, []);
 
   useEffect(() => {
-    if (!session) {
-      setJaTemAnuncio(false);
-      return;
-    }
+    if (!session) return;
     fetchMyProvider(session.user.id)
       .then((p) => setJaTemAnuncio(Boolean(p)))
       .catch(() => {});
@@ -167,7 +164,7 @@ export default function AnunciarScreen() {
             Grátis para começar. Apareça para milhares de brasileiros na sua região.
           </Text>
 
-          {jaTemAnuncio && (
+          {session && jaTemAnuncio && (
             <View style={styles.avisoAnuncio}>
               <Text style={styles.avisoAnuncioTexto}>
                 Você já tem um anúncio. Para editá-lo, use a aba{' '}
