@@ -52,6 +52,13 @@ export default function ProviderScreen() {
   const [textoNovo, setTextoNovo] = useState('');
   const [enviandoReview, setEnviandoReview] = useState(false);
 
+  // Volta para a tela anterior; se não houver histórico (link direto ou F5 na
+  // web, onde router.back() não faz nada), vai para a página inicial.
+  const voltar = useCallback(() => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
+  }, [router]);
+
   const carregarReviews = useCallback(async () => {
     if (!id) return;
     const [p, r] = await Promise.all([fetchProviderById(id), fetchReviews(id)]);
@@ -126,7 +133,7 @@ export default function ProviderScreen() {
             mensagem="Este prestador não está disponível."
             convite="Ele pode estar aguardando aprovação."
           />
-          <Pressable onPress={() => router.back()} style={styles.botaoVoltarVazio}>
+          <Pressable onPress={voltar} style={styles.botaoVoltarVazio}>
             <Text style={styles.botaoVoltarVazioTexto}>Voltar para a busca</Text>
           </Pressable>
         </View>
@@ -151,7 +158,7 @@ export default function ProviderScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <GradientHeader style={[styles.header, { paddingTop: insets.top + 16 }]}>
-            <Pressable onPress={() => router.back()} style={styles.voltarWrapper}>
+            <Pressable onPress={voltar} style={styles.voltarWrapper}>
               <GlassOnGreen style={styles.voltar}>
                 <ChevronLeft size={15} color={colors.white} />
                 <Text style={styles.voltarTexto}>Voltar</Text>
