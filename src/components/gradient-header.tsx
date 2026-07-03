@@ -1,12 +1,15 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import Svg, { Defs, Rect, RadialGradient, Stop } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { colors, radius } from '@/theme';
 
 /**
- * Cabeçalho com degradê radial verde e cantos inferiores arredondados (28px),
- * reproduzindo `radial-gradient(120% 140% at 85% -20%, #1E7F62, #14634B 45%, #0C3D2E)`.
+ * Cabeçalho com degradê verde e cantos inferiores arredondados (28px).
+ * Usa expo-linear-gradient (não SVG) para renderizar liso em todas as
+ * plataformas — na web vira um linear-gradient CSS, sem emendas.
+ * O brilho parte do topo-direita (verde-claro) para o canto inferior
+ * esquerdo (verde-escuro), reproduzindo o glow radial do protótipo.
  */
 export function GradientHeader({
   children,
@@ -17,16 +20,14 @@ export function GradientHeader({
 }) {
   return (
     <View style={styles.container}>
-      <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
-        <Defs>
-          <RadialGradient id="headerGrad" cx="85%" cy="-20%" rx="120%" ry="140%">
-            <Stop offset="0%" stopColor={colors.greenLight} />
-            <Stop offset="45%" stopColor={colors.green} />
-            <Stop offset="100%" stopColor={colors.greenDark} />
-          </RadialGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#headerGrad)" />
-      </Svg>
+      <LinearGradient
+        colors={[colors.greenLight, colors.green, colors.greenDark]}
+        locations={[0, 0.5, 1]}
+        start={{ x: 0.85, y: 0 }}
+        end={{ x: 0.15, y: 1 }}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
       <View style={style}>{children}</View>
     </View>
   );
