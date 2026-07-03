@@ -8,9 +8,15 @@ Diretório mobile de prestadores de serviços brasileiros nos EUA. Clientes busc
 
 1. Crie um projeto grátis em [supabase.com](https://supabase.com).
 2. No **SQL Editor**, rode o conteúdo de:
-   1. `supabase/migrations/0001_schema.sql` (tabelas, RLS, views, Storage)
+   1. `supabase/migrations/0001_schema.sql` (tabelas, RLS, **grants**, views, Storage)
    2. `supabase/seed.sql` (8 categorias + 5 prestadores de exemplo com avaliações)
-3. (Recomendado para o MVP) Em **Authentication → Sign In / Up → Email**, desative *Confirm email* para o cadastro entrar direto.
+
+   > Também dá para rodar `supabase/setup.sql` (schema + seed combinados) de uma vez.
+   > **Já tem um projeto antigo dando `permission denied for table ...`?** Rode
+   > `supabase/fix_grants.sql` — ele só aplica os `GRANT`s que faltavam (idempotente).
+3. Deixe a confirmação de e-mail **ligada** (padrão do Supabase, em
+   **Authentication → Sign In / Up → Email → Confirm email**). O app já trata esse
+   fluxo — veja [Confirmação de e-mail no cadastro](#confirmação-de-e-mail-no-cadastro).
 
 ## 2. Rodar o app
 
@@ -46,6 +52,35 @@ update providers set verificado = true where id = 'ID_AQUI';
 update providers set plano = 'destaque' where id = 'ID_AQUI';
 ```
 
+## Confirmação de e-mail no cadastro
+
+A confirmação de e-mail fica **ligada**: ao criar a conta, o Supabase envia um link
+e **não** abre sessão até o usuário confirmar. O app já foi construído para isso:
+
+1. **Cadastro** — se o `signUp` volta sem sessão, a tela mostra
+   *"Confirme seu e-mail… Depois de confirmar, volte e entre."* (`src/app/auth/login.tsx`).
+2. **Confirmação** — o usuário clica no link recebido por e-mail.
+3. **Login** — tentar entrar antes de confirmar retorna `email_not_confirmed`, que o app
+   traduz para *"Confirme seu e-mail antes de entrar."*. Após confirmar, o login abre a
+   sessão normalmente.
+
+Notas de operação:
+- O e-mail transacional padrão do Supabase tem **limite de envios por hora**
+  (`over_email_send_rate_limit`); para produção, configure um SMTP próprio em
+  **Authentication → Emails**.
+- O Supabase rejeita alguns domínios no cadastro (ex.: `@tembrasileiro.app` volta como
+  *invalid*); use um e-mail real.
+
+### Verificação do backend
+
+O script `scripts/verify.mjs` confere, contra o Supabase configurado no `.env`, os
+5 pontos do MVP: 5 prestadores ordenados (Destaque→nota), 8 categorias, view de
+avaliações com o nome do autor, RLS escondendo prestadores não-aprovados e o signup.
+
+```bash
+node scripts/verify.mjs   # lê EXPO_PUBLIC_SUPABASE_URL / _ANON_KEY do ambiente
+```
+
 ## Regras de produto no MVP
 
 - Busca e perfis são públicos; **avaliar** e **anunciar** exigem login (e-mail/senha).
@@ -61,7 +96,8 @@ src/app/            telas (Expo Router): (tabs)/, provider/[id], auth/login
 src/components/     UI do design system (vidro, chips, cards, tab bar…)
 src/lib/            client Supabase, auth context, queries, tipos
 src/theme.ts        tokens do protótipo (cores, fontes, raios, sombras)
-supabase/           migration + seed
+supabase/           migration + seed (setup.sql = combinado; fix_grants.sql = grants)
+scripts/verify.mjs  verificação do backend (5 checks do MVP)
 ```
 
 A referência visual é o protótipo aprovado `tem-brasileiro-app.jsx` (glassmorphism, Bricolage Grotesque + Inter, verde `#14634B` / amarelo `#FFC942`).
