@@ -2,22 +2,15 @@ import { StyleSheet, Text } from 'react-native';
 
 import { colors, fonts } from '@/theme';
 
-/** Logo da marca: "ACHEI" branco + "!" amarelo, Bricolage 800. */
+/** Logo da marca: wordmark "Achei" branco, Bricolage 800. */
 export function Logo({ size = 22 }: { size?: number }) {
-  return (
-    <Text style={[styles.logo, { fontSize: size }]}>
-      ACHEI<Text style={styles.amarelo}>!</Text>
-    </Text>
-  );
+  return <Text style={[styles.logo, { fontSize: size }]}>Achei</Text>;
 }
 
 const styles = StyleSheet.create({
   logo: {
     fontFamily: fonts.displayHeavy,
     color: colors.white,
-    letterSpacing: 0.5,
-  },
-  amarelo: {
-    color: colors.yellow,
+    letterSpacing: 0.3,
   },
 });

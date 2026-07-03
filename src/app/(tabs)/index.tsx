@@ -126,7 +126,6 @@ export default function InicioScreen() {
                   </GlassOnGreen>
                 </Pressable>
               </View>
-              <Text style={styles.headline}>Gente, tem brasileiro que faz…?</Text>
               <GlassOnGreen borderRadius={radius.input} style={styles.buscaBox}>
                 <Search size={17} color={colors.onGreen} />
                 <TextInput
@@ -234,20 +233,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.onGreen,
   },
-  headline: {
-    fontFamily: fonts.display,
-    fontSize: 26,
-    lineHeight: 30,
-    color: colors.white,
-    marginTop: 14,
-    marginBottom: 16,
-  },
   buscaBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 9,
     paddingHorizontal: 14,
     height: 50,
+    marginTop: 18,
   },
   buscaInput: {
     flex: 1,
