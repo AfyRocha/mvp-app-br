@@ -1,4 +1,4 @@
-# tem brasileiro
+# ACHEI
 
 Diretório mobile de prestadores de serviços brasileiros nos EUA. Clientes buscam por categoria e cidade e chamam direto no WhatsApp. MVP sem pagamentos — monetização futura via plano **Destaque** para prestadores.
 

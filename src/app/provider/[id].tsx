@@ -35,7 +35,7 @@ import {
 import type { ProviderPhoto, ProviderWithRating, Review } from '@/lib/types';
 import { colors, fonts, glass, radius } from '@/theme';
 
-const MENSAGEM_WHATSAPP = 'Olá! Te encontrei no tem brasileiro 👋';
+const MENSAGEM_WHATSAPP = 'Olá! Te encontrei no ACHEI 👋';
 
 export default function ProviderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

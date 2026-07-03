@@ -48,7 +48,7 @@ export default function PrivacidadeScreen() {
           <Text style={styles.headerTitulo}>Política de Privacidade</Text>
         </View>
         <Text style={styles.headerSub}>
-          Como o tem brasileiro trata seus dados, conforme a LGPD (Lei nº 13.709/2018).
+          Como o ACHEI trata seus dados, conforme a LGPD (Lei nº 13.709/2018).
         </Text>
       </GradientHeader>
 
@@ -60,7 +60,7 @@ export default function PrivacidadeScreen() {
 
         <Secao titulo="1. Quem é o controlador">
           <P>
-            O tem brasileiro é um diretório que conecta clientes a prestadores de serviços
+            O ACHEI é um diretório que conecta clientes a prestadores de serviços
             brasileiros. O responsável pelo tratamento dos seus dados (controlador) pode ser
             contatado pelo e-mail {CONTATO}.
           </P>
