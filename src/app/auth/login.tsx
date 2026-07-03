@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { X } from 'lucide-react-native';
+import { Check, X } from 'lucide-react-native';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -31,10 +31,13 @@ export default function LoginScreen() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [aceito, setAceito] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
   const podeEnviar =
-    email.trim().length > 3 && senha.length >= 6 && (modo === 'entrar' || nome.trim().length > 1);
+    email.trim().length > 3 &&
+    senha.length >= 6 &&
+    (modo === 'entrar' || (nome.trim().length > 1 && aceito));
 
   async function enviar() {
     if (!podeEnviar || enviando) return;
@@ -131,6 +134,31 @@ export default function LoginScreen() {
               style={styles.campo}
               secureTextEntry
             />
+
+            {modo === 'cadastrar' && (
+              <Pressable
+                onPress={() => setAceito((v) => !v)}
+                style={styles.consentimento}
+                hitSlop={6}
+              >
+                <View style={[styles.checkbox, aceito && styles.checkboxMarcado]}>
+                  {aceito && <Check size={14} color={colors.white} strokeWidth={3} />}
+                </View>
+                <Text style={styles.consentimentoTexto}>
+                  Li e aceito a{' '}
+                  <Text
+                    style={styles.link}
+                    onPress={(e) => {
+                      e.stopPropagation?.();
+                      router.push('/privacidade');
+                    }}
+                  >
+                    Política de Privacidade
+                  </Text>{' '}
+                  e o tratamento dos meus dados conforme a LGPD.
+                </Text>
+              </Pressable>
+            )}
 
             <Pressable
               onPress={enviar}
@@ -264,6 +292,37 @@ const styles = StyleSheet.create({
   },
   botaoTextoDesabilitado: {
     color: colors.gray,
+  },
+  consentimento: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginTop: 18,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.6,
+    borderColor: colors.gray,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  checkboxMarcado: {
+    backgroundColor: colors.green,
+    borderColor: colors.green,
+  },
+  consentimentoTexto: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.gray,
+  },
+  link: {
+    fontFamily: fonts.bodyBold,
+    color: colors.green,
   },
   trocarModo: {
     alignItems: 'center',

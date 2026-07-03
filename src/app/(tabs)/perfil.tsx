@@ -107,6 +107,9 @@ export default function PerfilScreen() {
           <Pressable onPress={() => router.push('/auth/login')} style={styles.botaoPrimario}>
             <Text style={styles.botaoPrimarioTexto}>Entrar ou criar conta</Text>
           </Pressable>
+          <Pressable onPress={() => router.push('/privacidade')} style={styles.linkPrivacidade}>
+            <Text style={styles.linkPrivacidadeTexto}>Política de Privacidade</Text>
+          </Pressable>
         </View>
       </AppBackground>
     );
@@ -142,6 +145,9 @@ export default function PerfilScreen() {
           <Pressable onPress={signOut} style={styles.sair}>
             <LogOut size={15} color={colors.gray} />
             <Text style={styles.sairTexto}>Sair da conta</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push('/privacidade')} style={styles.linkPrivacidade}>
+            <Text style={styles.linkPrivacidadeTexto}>Política de Privacidade</Text>
           </Pressable>
         </View>
       </AppBackground>
@@ -246,6 +252,9 @@ export default function PerfilScreen() {
             <LogOut size={15} color={colors.gray} />
             <Text style={styles.sairTexto}>Sair da conta</Text>
           </Pressable>
+          <Pressable onPress={() => router.push('/privacidade')} style={styles.linkPrivacidade}>
+            <Text style={styles.linkPrivacidadeTexto}>Política de Privacidade</Text>
+          </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
     </AppBackground>
@@ -319,6 +328,17 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemiBold,
     fontSize: 13,
     color: colors.gray,
+  },
+  linkPrivacidade: {
+    alignSelf: 'center',
+    marginTop: 14,
+    paddingVertical: 4,
+  },
+  linkPrivacidadeTexto: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 12.5,
+    color: colors.green,
+    textDecorationLine: 'underline',
   },
   scroll: {
     paddingHorizontal: 20,

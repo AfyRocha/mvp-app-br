@@ -47,6 +47,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="provider/[id]" />
         <Stack.Screen name="auth/login" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="privacidade" options={{ presentation: 'modal' }} />
       </Stack>
     </AuthProvider>
   );
