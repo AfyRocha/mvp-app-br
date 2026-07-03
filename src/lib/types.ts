@@ -21,6 +21,8 @@ export interface Profile {
   tipo: 'cliente' | 'prestador';
   telefone: string | null;
   cidade: string | null;
+  endereco: string | null;
+  foto_url: string | null;
   criado_em: string;
 }
 

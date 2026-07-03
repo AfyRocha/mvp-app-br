@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import type {
   Category,
+  Profile,
   Provider,
   ProviderPhoto,
   ProviderWithRating,
@@ -82,6 +83,14 @@ export function incrementProviderView(providerId: string) {
     .then(({ error }) => {
       if (error) console.warn('Falha ao registrar visualização:', error.message);
     });
+}
+
+export async function updateMyProfile(
+  id: string,
+  patch: Partial<Pick<Profile, 'nome' | 'telefone' | 'cidade' | 'endereco' | 'foto_url'>>
+) {
+  const { error } = await supabase.from('profiles').update(patch).eq('id', id);
+  if (error) throw error;
 }
 
 export async function fetchMyProvider(profileId: string): Promise<Provider | null> {
