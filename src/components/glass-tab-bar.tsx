@@ -21,7 +21,7 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
   return (
     <View style={[styles.wrapper, { bottom: Math.max(insets.bottom, 12) }]} pointerEvents="box-none">
       <View style={styles.clipper}>
-        <BlurView intensity={16} tint="light" experimentalBlurMethod={blurMethod} style={styles.bar}>
+        <BlurView intensity={36} tint="light" experimentalBlurMethod={blurMethod} style={styles.bar}>
           {state.routes.map((route, index) => {
             const meta = TAB_META[route.name];
             if (!meta) return null;

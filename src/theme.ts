@@ -31,7 +31,7 @@ export const colors = {
 export const glass = {
   surface: 'rgba(255,255,255,0.62)',
   surfaceStrong: 'rgba(255,255,255,0.88)',
-  navBar: 'rgba(255,255,255,0.72)',
+  navBar: 'rgba(255,255,255,0.82)',
   /** vidro sobre o degradê verde do cabeçalho */
   onGreen: 'rgba(255,255,255,0.14)',
   onGreenBorder: 'rgba(255,255,255,0.28)',

@@ -112,7 +112,7 @@ export default function InicioScreen() {
             tintColor={colors.green}
           />
         }
-        contentContainerStyle={styles.lista}
+        contentContainerStyle={[styles.lista, { paddingBottom: insets.bottom + 120 }]}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View>
@@ -210,7 +210,7 @@ export default function InicioScreen() {
 
 const styles = StyleSheet.create({
   lista: {
-    paddingBottom: 96,
+    paddingBottom: 120,
   },
   header: {
     paddingHorizontal: 20,
