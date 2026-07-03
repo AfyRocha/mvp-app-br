@@ -190,6 +190,33 @@ create policy "remover a própria avaliação"
   on public.reviews for delete using (auth.uid() = autor_profile_id);
 
 -- ------------------------------------------------------------
+-- Grants (privilégios de tabela)
+-- SEM ISTO a RLS nem chega a ser avaliada: o PostgREST devolve
+-- "permission denied for table ...". As policies acima só filtram
+-- LINHAS; o acesso à tabela em si depende destes GRANTs.
+-- ------------------------------------------------------------
+
+grant usage on schema public to anon, authenticated;
+
+-- Leitura (RLS filtra as linhas): categorias, prestadores, fotos,
+-- avaliações e as duas views usadas pelo app.
+grant select on public.categories        to anon, authenticated;
+grant select on public.providers          to anon, authenticated;
+grant select on public.provider_photos    to anon, authenticated;
+grant select on public.reviews            to anon, authenticated;
+grant select on public.providers_com_nota to anon, authenticated;
+grant select on public.reviews_com_autor  to anon, authenticated;
+
+-- Escrita: apenas usuários logados (a RLS restringe ao dono).
+grant select, insert, update         on public.profiles       to authenticated;
+grant insert, update, delete         on public.providers      to authenticated;
+grant insert, delete                 on public.provider_photos to authenticated;
+grant insert, update, delete         on public.reviews        to authenticated;
+
+-- RPC pública de contagem de visualizações.
+grant execute on function public.incrementar_visualizacao(uuid) to anon, authenticated;
+
+-- ------------------------------------------------------------
 -- Storage: fotos de perfil e portfólio
 -- ------------------------------------------------------------
 

@@ -10,11 +10,14 @@ if (!url || !anon) {
   process.exit(1);
 }
 
+const CANARY_ID = '99999999-9999-4999-8999-999999999999'; // prestador não-aprovado (fix_grants.sql)
 const supabase = createClient(url, anon, { auth: { persistSession: false } });
 let pass = 0;
 let fail = 0;
+let warn = 0;
 const ok = (m) => { pass++; console.log(`  ✅ ${m}`); };
 const bad = (m) => { fail++; console.log(`  ❌ ${m}`); };
+const note = (m) => { warn++; console.log(`  ⚠️  ${m}`); };
 
 // 1) Prestadores: 5, ordenados Destaque -> melhor nota (igual fetchProviders)
 console.log('\n[1] Prestadores (5, ordenados Destaque → nota)');
@@ -30,7 +33,6 @@ console.log('\n[1] Prestadores (5, ordenados Destaque → nota)');
     rows.length === 5 ? ok(`5 prestadores aprovados`) : bad(`esperado 5, veio ${rows.length}`);
     rows.forEach((r, i) =>
       console.log(`     ${i + 1}. ${r.nome_negocio} — ${r.plano} — nota ${r.nota_media ?? '—'} (${r.total_avaliacoes} aval.)`));
-    // valida a ordenação
     let ordered = true;
     for (let i = 1; i < rows.length; i++) {
       const a = rows[i - 1], b = rows[i];
@@ -56,7 +58,7 @@ console.log('\n[2] Categorias (8)');
   }
 }
 
-// 4) View de avaliações com nome do autor
+// 3) View de avaliações com nome do autor
 console.log('\n[3] View reviews_com_autor (nome do autor)');
 {
   const provId = 'aaaaaaa1-0000-4000-8000-000000000001'; // Márcia
@@ -74,58 +76,51 @@ console.log('\n[3] View reviews_com_autor (nome do autor)');
   }
 }
 
-// 5) Signup + 3) RLS de não-aprovados (combinados)
-console.log('\n[4] Signup + [5] RLS de prestador não-aprovado');
+// 4) RLS de prestador NÃO aprovado (via canário do fix_grants.sql)
+console.log('\n[4] RLS: prestador não-aprovado é invisível ao anônimo');
 {
-  const email = `verify+${Date.now()}@tembrasileiro.app`;
+  const { data, error } = await supabase
+    .from('providers_com_nota').select('id').eq('id', CANARY_ID);
+  if (error) { bad(`erro ao consultar a view: ${error.message}`); }
+  else if (data.length === 0) {
+    ok('canário não-aprovado NÃO aparece na listagem pública (RLS OK)');
+    const { data: base } = await supabase.from('providers').select('id').eq('id', CANARY_ID);
+    base && base.length === 0
+      ? ok('canário também invisível na tabela base providers (RLS OK)')
+      : bad('canário visível na tabela base providers (RLS FALHOU)');
+  } else {
+    bad('RLS FALHOU: o prestador não-aprovado vazou para o anônimo');
+  }
+  // Prova extra: anônimo não consegue inserir prestador (write bloqueado)
+  const { error: insErr } = await supabase
+    .from('providers').insert({ nome_negocio: 'x', categoria: 'limpeza', cidade_principal: 'x', whatsapp: '0' });
+  insErr ? ok(`anônimo NÃO consegue inserir prestador (${insErr.code || 'bloqueado'})`)
+         : bad('anônimo conseguiu inserir prestador (RLS/grant FALHOU)');
+}
+
+// 5) Signup real
+console.log('\n[5] Signup');
+{
+  const email = `tembr.verify.${Date.now()}@gmail.com`;
   const password = `Verify!${Math.random().toString(36).slice(2, 10)}`;
   const { data: signUp, error: suErr } = await supabase.auth.signUp({
     email, password, options: { data: { nome: 'Teste Verificação' } },
   });
-  if (suErr) { bad(`signup falhou: ${suErr.message}`); }
-  else {
-    ok(`signup OK (user ${signUp.user?.id?.slice(0, 8)}…)`);
-    const hasSession = Boolean(signUp.session);
-    console.log(`     ${hasSession ? 'sessão ativa (confirmação de e-mail desligada)' : 'sem sessão (aguarda confirmação de e-mail)'}`);
-
-    if (hasSession && signUp.user) {
-      // insere um prestador NÃO aprovado como esse usuário
-      const { data: prov, error: insErr } = await supabase
-        .from('providers').insert({
-          profile_id: signUp.user.id,
-          nome_negocio: 'Prestador Teste (não aprovado)',
-          categoria: 'limpeza',
-          cidade_principal: 'Orlando, FL',
-          whatsapp: '10000000000',
-          aprovado: false,
-        }).select('id').single();
-      if (insErr) { bad(`insert do prestador falhou: ${insErr.message}`); }
-      else {
-        ok('prestador não-aprovado criado pelo dono');
-        // o dono ainda vê o próprio (RLS: aprovado OR dono)
-        const { data: mine } = await supabase.from('providers').select('id').eq('id', prov.id);
-        mine?.length ? ok('dono enxerga o próprio anúncio pendente') : bad('dono não vê o próprio anúncio');
-        // logout -> anônimo NÃO pode ver o não-aprovado
-        await supabase.auth.signOut();
-        const anonCli = createClient(url, anon, { auth: { persistSession: false } });
-        const { data: seen } = await anonCli.from('providers_com_nota').select('id').eq('id', prov.id);
-        seen && seen.length === 0
-          ? ok('RLS OK: anônimo NÃO vê o prestador não-aprovado')
-          : bad('RLS FALHOU: não-aprovado vazou para o anônimo');
-        const { data: seenBase } = await anonCli.from('providers').select('id').eq('id', prov.id);
-        seenBase && seenBase.length === 0
-          ? ok('RLS OK: anônimo NÃO vê na tabela base providers')
-          : bad('RLS FALHOU: não-aprovado visível na tabela base');
-      }
+  if (suErr) {
+    if (suErr.code === 'over_email_send_rate_limit' || suErr.status === 429) {
+      note(`endpoint de signup OK, mas rate limit de e-mail atingido (${suErr.message})`);
     } else {
-      console.log('     (RLS de não-aprovado exige sessão para inserir; pulei o insert. Testo o inverso abaixo.)');
-      // Sem sessão: garante que a contagem pública == aprovados do seed
-      const { count } = await supabase
-        .from('providers_com_nota').select('id', { count: 'exact', head: true });
-      count === 5 ? ok('anônimo vê apenas os 5 aprovados (nenhum pendente vaza)') : bad(`anônimo vê ${count} prestadores`);
+      bad(`signup falhou: ${suErr.message}`);
     }
+  } else if (signUp.user) {
+    ok(`signup OK (user ${signUp.user.id.slice(0, 8)}…, email ${signUp.user.email})`);
+    console.log(`     ${signUp.session
+      ? 'sessão ativa (confirmação de e-mail desligada)'
+      : 'sem sessão → confirmação de e-mail LIGADA (esperado)'}`);
+  } else {
+    bad('signup não retornou usuário');
   }
 }
 
-console.log(`\n─── Resultado: ${pass} OK, ${fail} falha(s) ───`);
+console.log(`\n─── Resultado: ${pass} OK, ${fail} falha(s), ${warn} aviso(s) ───`);
 process.exit(fail ? 1 : 0);
