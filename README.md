@@ -29,6 +29,32 @@ npx expo start
 
 Escaneie o QR code com o app **Expo Go** ([iOS](https://apps.apple.com/app/expo-go/id982107779) / [Android](https://play.google.com/store/apps/details?id=host.exp.exponent)). Se o celular não estiver na mesma rede, use `npx expo start --tunnel`.
 
+## 2b. Deploy web na Vercel
+
+O app roda como **SPA web** (`web.output: "single"` no `app.json`) e o `vercel.json`
+já define build/output. Para publicar:
+
+1. Na [Vercel](https://vercel.com/new), **importe o repositório** (Framework preset: *Other* —
+   o `vercel.json` cuida do resto: `npx expo export --platform web` → `dist/`).
+2. Em **Settings → Environment Variables**, adicione (Production **e** Preview):
+   - `EXPO_PUBLIC_SUPABASE_URL`
+   - `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+
+   > São inlinadas no build (prefixo `EXPO_PUBLIC_`); sem elas o app sobe sem backend.
+3. **Deploy**. Cada push na branch gera um preview; a branch de produção publica no domínio.
+4. No **Supabase → Authentication → URL Configuration**, adicione a URL da Vercel em
+   *Site URL* e *Redirect URLs* — assim o link de confirmação de e-mail volta para o app.
+
+Build local (para conferir antes de publicar):
+
+```bash
+npx expo export --platform web      # gera dist/
+npx serve dist                      # ou: python3 -m http.server -d dist 8080
+```
+
+> A versão web é ótima para um link de feedback compartilhável. Para validar a
+> experiência **mobile** de verdade (blur/glass, seletor de fotos, haptics), use o Expo Go.
+
 ## 3. Aprovar prestadores (manual, sem painel admin)
 
 Novos cadastros entram com `aprovado = false` e não aparecem na busca. Para aprovar, rode no SQL Editor:
