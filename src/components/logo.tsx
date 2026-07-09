@@ -9,17 +9,21 @@ import { colors, fonts } from '@/theme';
  * do cabeçalho (o logo é sempre exibido sobre o degradê verde).
  */
 export function Logo({ size = 22 }: { size?: number }) {
-  const mark = Math.round(size * 1.3);
+  const w = Math.round(size * 1.16);
+  const h = Math.round(size * 1.34);
   return (
     <View style={styles.row}>
-      <Svg width={mark} height={mark} viewBox="0 0 100 100">
+      <Svg width={w} height={h} viewBox="0 0 100 112">
+        {/* "A" em pin, com o vão (counter) recortado */}
         <Path
           fill={colors.white}
           fillRule="evenodd"
-          d="M50 6 L84 84 L61 84 L50 56 L39 84 L16 84 Z M50 30 L58 50 L42 50 Z"
+          d="M50 6 L86 98 L67 98 L50 58 L33 98 L14 98 Z M50 30 L58 52 L42 52 Z"
         />
-        <Circle cx="55" cy="70" r="15" stroke={colors.white} strokeWidth="7" fill={colors.green} />
-        <Path d="M66 81 L80 96" stroke={colors.white} strokeWidth="9" strokeLinecap="round" />
+        {/* lente da lupa (verde do cabeçalho preenche o miolo) */}
+        <Circle cx="50" cy="80" r="14.5" stroke={colors.white} strokeWidth="5.5" fill={colors.green} />
+        {/* cabo */}
+        <Path d="M60 90 L78 108" stroke={colors.white} strokeWidth="5.5" strokeLinecap="round" />
       </Svg>
       <Text style={[styles.logo, { fontSize: size }]}>Achei</Text>
     </View>
