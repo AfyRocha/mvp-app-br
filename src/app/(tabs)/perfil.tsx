@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { Camera, Eye, LogOut, UserRound } from 'lucide-react-native';
+import { Camera, ChevronRight, Eye, LogOut, ShieldCheck, Trash2, UserRound } from 'lucide-react-native';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -23,6 +23,7 @@ import { CategoryChip } from '@/components/category-chip';
 import { GlassCard } from '@/components/glass';
 import { VerifiedBadge } from '@/components/verified-badge';
 import { useAuth } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 import {
   fetchCategories,
   fetchMyProvider,
@@ -153,6 +154,37 @@ export default function PerfilScreen() {
       Alert.alert('Meu anúncio', e instanceof Error ? e.message : 'Não foi possível salvar.');
     } finally {
       setSalvando(false);
+    }
+  }
+
+  function confirmarExclusao() {
+    Alert.alert(
+      'Excluir minha conta',
+      'Isso remove seu anúncio, fotos, avaliações e dados pessoais, e desconecta você. Esta ação não pode ser desfeita.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Excluir', style: 'destructive', onPress: excluirConta },
+      ]
+    );
+  }
+
+  async function excluirConta() {
+    if (!session) return;
+    try {
+      if (provider) {
+        // apaga o anúncio (cascata: fotos e avaliações recebidas)
+        await supabase.from('providers').delete().eq('id', provider.id);
+      }
+      // avaliações escritas pelo usuário e dados pessoais do perfil
+      await supabase.from('reviews').delete().eq('autor_profile_id', session.user.id);
+      await supabase
+        .from('profiles')
+        .update({ nome: null, telefone: null, endereco: null, foto_url: null, tipo: 'cliente' })
+        .eq('id', session.user.id);
+      await signOut();
+      Alert.alert('Conta excluída', 'Seus dados foram removidos e você foi desconectado.');
+    } catch (e) {
+      Alert.alert('Excluir conta', e instanceof Error ? e.message : 'Não foi possível excluir agora.');
     }
   }
 
@@ -368,12 +400,29 @@ export default function PerfilScreen() {
             </View>
           )}
 
-          <Pressable onPress={signOut} style={styles.sair}>
-            <LogOut size={15} color={colors.gray} />
-            <Text style={styles.sairTexto}>Sair da conta</Text>
-          </Pressable>
-          <Pressable onPress={() => router.push('/privacidade')} style={styles.linkPrivacidade}>
-            <Text style={styles.linkPrivacidadeTexto}>Política de Privacidade</Text>
+          {/* ---- Configurações ---- */}
+          <View style={styles.separador} />
+          <Text style={styles.secaoTitulo}>Configurações</Text>
+          <View style={styles.settingsCard}>
+            <Pressable
+              style={styles.settingsRow}
+              onPress={() => router.push('/privacidade')}
+            >
+              <ShieldCheck size={18} color={colors.green} strokeWidth={2} />
+              <Text style={styles.settingsTexto}>Política de Privacidade</Text>
+              <ChevronRight size={18} color={colors.gray} />
+            </Pressable>
+            <View style={styles.settingsDivisor} />
+            <Pressable style={styles.settingsRow} onPress={confirmarExclusao}>
+              <Trash2 size={18} color="#B23A3A" strokeWidth={2} />
+              <Text style={[styles.settingsTexto, styles.settingsPerigo]}>Excluir minha conta</Text>
+              <ChevronRight size={18} color={colors.gray} />
+            </Pressable>
+          </View>
+
+          <Pressable onPress={signOut} style={styles.sairBotao}>
+            <LogOut size={17} color="#B23A3A" strokeWidth={2} />
+            <Text style={styles.sairBotaoTexto}>Sair do aplicativo</Text>
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -514,6 +563,51 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     color: colors.green,
     textDecorationLine: 'underline',
+  },
+  settingsCard: {
+    backgroundColor: glass.surface,
+    borderWidth: 1,
+    borderColor: glass.border,
+    borderRadius: radius.card,
+    overflow: 'hidden',
+  },
+  settingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+  },
+  settingsTexto: {
+    flex: 1,
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14.5,
+    color: colors.ink,
+  },
+  settingsPerigo: {
+    color: '#B23A3A',
+  },
+  settingsDivisor: {
+    height: 1,
+    backgroundColor: colors.line,
+    marginLeft: 44,
+  },
+  sairBotao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 18,
+    paddingVertical: 14,
+    borderRadius: radius.input,
+    borderWidth: 1.5,
+    borderColor: '#E4C4C4',
+    backgroundColor: 'rgba(178,58,58,0.06)',
+  },
+  sairBotaoTexto: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 15,
+    color: '#B23A3A',
   },
   scroll: {
     paddingHorizontal: 20,

@@ -129,6 +129,33 @@ as $$
 $$;
 
 -- ------------------------------------------------------------
+-- Selo "Verificado" automático: fica true quando o cadastro do anúncio
+-- está completo (todos os campos principais preenchidos). Calculado por
+-- trigger no servidor => o cliente não consegue forçar o selo.
+-- ------------------------------------------------------------
+
+create function public.calcular_verificado()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.verificado := (
+    coalesce(length(trim(new.nome_negocio)), 0) > 0
+    and new.categoria is not null
+    and coalesce(length(trim(new.cidade_principal)), 0) > 0
+    and coalesce(array_length(new.cidades_atendidas, 1), 0) > 0
+    and coalesce(length(trim(new.whatsapp)), 0) > 0
+    and coalesce(length(trim(new.bio)), 0) > 0
+  );
+  return new;
+end;
+$$;
+
+create trigger providers_calcular_verificado
+  before insert or update on public.providers
+  for each row execute function public.calcular_verificado();
+
+-- ------------------------------------------------------------
 -- RLS
 -- ------------------------------------------------------------
 
@@ -157,6 +184,8 @@ create policy "cadastrar-se como prestador"
   on public.providers for insert with check (auth.uid() = profile_id);
 create policy "editar o próprio anúncio"
   on public.providers for update using (auth.uid() = profile_id);
+create policy "remover o próprio anúncio"
+  on public.providers for delete using (auth.uid() = profile_id);
 
 -- provider_photos: seguem o prestador
 create policy "fotos de prestadores aprovados são públicas"
