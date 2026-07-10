@@ -5,7 +5,6 @@ import { Camera, ChevronRight, Eye, LogOut, ShieldCheck, Trash2, UserRound } fro
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -23,6 +22,7 @@ import { CategoryChip } from '@/components/category-chip';
 import { GlassCard } from '@/components/glass';
 import { VerifiedBadge } from '@/components/verified-badge';
 import { useAuth } from '@/lib/auth';
+import { confirmAction, notify } from '@/lib/feedback';
 import { supabase } from '@/lib/supabase';
 import {
   fetchCategories,
@@ -103,9 +103,9 @@ export default function PerfilScreen() {
         endereco: pEndereco.trim(),
       });
       await refreshProfile();
-      Alert.alert('Meus dados', 'Dados atualizados!');
+      notify('Meus dados', 'Dados atualizados!');
     } catch (e) {
-      Alert.alert('Meus dados', e instanceof Error ? e.message : 'Não foi possível salvar.');
+      notify('Meus dados', e instanceof Error ? e.message : 'Não foi possível salvar.');
     } finally {
       setSalvandoDados(false);
     }
@@ -127,7 +127,7 @@ export default function PerfilScreen() {
       setPFotoUrl(url);
       await refreshProfile();
     } catch (e) {
-      Alert.alert('Foto de perfil', e instanceof Error ? e.message : 'Não foi possível enviar a foto.');
+      notify('Foto de perfil', e instanceof Error ? e.message : 'Não foi possível enviar a foto.');
     } finally {
       setSubindoFoto(false);
     }
@@ -149,23 +149,23 @@ export default function PerfilScreen() {
         bio: bio.trim(),
       });
       await carregar();
-      Alert.alert('Meu anúncio', 'Anúncio atualizado!');
+      notify('Meu anúncio', 'Anúncio atualizado!');
     } catch (e) {
-      Alert.alert('Meu anúncio', e instanceof Error ? e.message : 'Não foi possível salvar.');
+      notify('Meu anúncio', e instanceof Error ? e.message : 'Não foi possível salvar.');
     } finally {
       setSalvando(false);
     }
   }
 
   function confirmarExclusao() {
-    Alert.alert(
-      'Excluir minha conta',
-      'Isso remove seu anúncio, fotos, avaliações e dados pessoais, e desconecta você. Esta ação não pode ser desfeita.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: excluirConta },
-      ]
-    );
+    confirmAction({
+      title: 'Excluir minha conta',
+      message:
+        'Isso remove seu anúncio, fotos, avaliações e dados pessoais, e desconecta você. Esta ação não pode ser desfeita.',
+      confirmText: 'Excluir',
+      destructive: true,
+      onConfirm: excluirConta,
+    });
   }
 
   async function excluirConta() {
@@ -182,9 +182,9 @@ export default function PerfilScreen() {
         .update({ nome: null, telefone: null, endereco: null, foto_url: null, tipo: 'cliente' })
         .eq('id', session.user.id);
       await signOut();
-      Alert.alert('Conta excluída', 'Seus dados foram removidos e você foi desconectado.');
+      notify('Conta excluída', 'Seus dados foram removidos e você foi desconectado.');
     } catch (e) {
-      Alert.alert('Excluir conta', e instanceof Error ? e.message : 'Não foi possível excluir agora.');
+      notify('Excluir conta', e instanceof Error ? e.message : 'Não foi possível excluir agora.');
     }
   }
 

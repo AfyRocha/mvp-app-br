@@ -3,7 +3,6 @@ import { Check, X } from 'lucide-react-native';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -18,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppBackground } from '@/components/app-background';
 import { GradientHeader } from '@/components/gradient-header';
 import { Logo } from '@/components/logo';
+import { notify } from '@/lib/feedback';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts, glass, radius } from '@/theme';
 
@@ -57,7 +57,7 @@ export default function LoginScreen() {
         });
         if (error) throw error;
         if (!data.session) {
-          Alert.alert(
+          notify(
             'Confirme seu e-mail',
             'Enviamos um link de confirmação para o seu e-mail. Depois de confirmar, volte e entre.'
           );
@@ -65,7 +65,7 @@ export default function LoginScreen() {
       }
       router.back();
     } catch (e) {
-      Alert.alert(
+      notify(
         modo === 'entrar' ? 'Entrar' : 'Criar conta',
         e instanceof Error ? traduzErro(e.message) : 'Algo deu errado. Tente de novo.'
       );

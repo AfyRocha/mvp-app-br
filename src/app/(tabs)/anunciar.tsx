@@ -5,7 +5,6 @@ import { ImagePlus, PartyPopper, X } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -21,6 +20,7 @@ import { AppBackground } from '@/components/app-background';
 import { CategoryChip } from '@/components/category-chip';
 import { GlassCard } from '@/components/glass';
 import { useAuth } from '@/lib/auth';
+import { notify } from '@/lib/feedback';
 import {
   addProviderPhoto,
   createProvider,
@@ -112,7 +112,7 @@ export default function AnunciarScreen() {
 
       setEnviado(true);
     } catch (e) {
-      Alert.alert('Anunciar', e instanceof Error ? e.message : 'Não foi possível enviar.');
+      notify('Anunciar', e instanceof Error ? e.message : 'Não foi possível enviar.');
     } finally {
       setEnviando(false);
     }

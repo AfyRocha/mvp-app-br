@@ -5,7 +5,6 @@ import { ChevronLeft, MapPin, MessageCircle, Star } from 'lucide-react-native';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -25,6 +24,7 @@ import { GradientHeader } from '@/components/gradient-header';
 import { Stars } from '@/components/stars';
 import { VerifiedBadge } from '@/components/verified-badge';
 import { useAuth } from '@/lib/auth';
+import { notify } from '@/lib/feedback';
 import {
   fetchProviderById,
   fetchProviderPhotos,
@@ -94,7 +94,7 @@ export default function ProviderScreen() {
   async function enviarReview() {
     if (!provider || !session) return;
     if (notaNova === 0) {
-      Alert.alert('Avaliação', 'Escolha uma nota de 1 a 5 estrelas.');
+      notify('Avaliação', 'Escolha uma nota de 1 a 5 estrelas.');
       return;
     }
     setEnviandoReview(true);
@@ -109,7 +109,7 @@ export default function ProviderScreen() {
       setTextoNovo('');
       await carregarReviews();
     } catch (e) {
-      Alert.alert('Avaliação', e instanceof Error ? e.message : 'Não foi possível enviar.');
+      notify('Avaliação', e instanceof Error ? e.message : 'Não foi possível enviar.');
     } finally {
       setEnviandoReview(false);
     }
