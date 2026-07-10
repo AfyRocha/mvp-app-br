@@ -26,6 +26,8 @@ create table public.profiles (
   tipo text not null default 'cliente' check (tipo in ('cliente', 'prestador')),
   telefone text,
   cidade text,
+  endereco text,
+  foto_url text,
   criado_em timestamptz not null default now()
 );
 
@@ -213,11 +215,17 @@ grant select on public.reviews            to anon, authenticated;
 grant select on public.providers_com_nota to anon, authenticated;
 grant select on public.reviews_com_autor  to anon, authenticated;
 
--- Escrita: apenas usuários logados (a RLS restringe ao dono).
-grant select, insert, update         on public.profiles       to authenticated;
-grant insert, update, delete         on public.providers      to authenticated;
-grant insert, delete                 on public.provider_photos to authenticated;
-grant insert, update, delete         on public.reviews        to authenticated;
+-- Escrita: apenas usuários logados (a RLS restringe ao dono). O UPDATE de
+-- providers/reviews é POR COLUNA: aprovado/verificado/plano/visualizacoes ficam
+-- fora do alcance do cliente (só admin/service_role; o contador de views usa a
+-- função security definer).
+grant select, insert, update on public.profiles to authenticated;
+grant insert, delete on public.providers to authenticated;
+grant update (nome_negocio, categoria, bio, cidade_principal, cidades_atendidas,
+              whatsapp, servicos, cor, desde) on public.providers to authenticated;
+grant insert, delete on public.provider_photos to authenticated;
+grant insert, delete on public.reviews to authenticated;
+grant update (nota, texto) on public.reviews to authenticated;
 
 -- RPC pública de contagem de visualizações.
 grant execute on function public.incrementar_visualizacao(uuid) to anon, authenticated;
