@@ -10,12 +10,9 @@
 -- visualizacoes continua sendo atualizada pela função security definer.
 -- ============================================================
 
--- providers: só as colunas do próprio anúncio
--- (aprovado, verificado, plano e visualizacoes ficam de fora)
+-- providers: authenticated só pode dar UPDATE nas colunas do próprio anúncio.
+-- aprovado, verificado, plano e visualizacoes ficam de fora (só admin; o
+-- contador de views é atualizado pela função security definer).
 revoke update on public.providers from authenticated;
 grant update (nome_negocio, categoria, bio, cidade_principal, cidades_atendidas,
               whatsapp, servicos, cor, desde) on public.providers to authenticated;
-
--- reviews: só nota e texto (não deixa remapear autor/prestador)
-revoke update on public.reviews from authenticated;
-grant update (nota, texto) on public.reviews to authenticated;

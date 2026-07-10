@@ -224,8 +224,7 @@ grant insert, delete on public.providers to authenticated;
 grant update (nome_negocio, categoria, bio, cidade_principal, cidades_atendidas,
               whatsapp, servicos, cor, desde) on public.providers to authenticated;
 grant insert, delete on public.provider_photos to authenticated;
-grant insert, delete on public.reviews to authenticated;
-grant update (nota, texto) on public.reviews to authenticated;
+grant insert, update, delete on public.reviews to authenticated;
 
 -- RPC pública de contagem de visualizações.
 grant execute on function public.incrementar_visualizacao(uuid) to anon, authenticated;
