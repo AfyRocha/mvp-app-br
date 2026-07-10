@@ -22,14 +22,19 @@ import { GlassOnGreen } from '@/components/glass';
 import { GradientHeader } from '@/components/gradient-header';
 import { Logo } from '@/components/logo';
 import { ProviderCard } from '@/components/provider-card';
+import { useAuth } from '@/lib/auth';
 import { fetchCategories, fetchProviders } from '@/lib/queries';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import type { Category, ProviderWithRating } from '@/lib/types';
 import { colors, fonts, radius } from '@/theme';
 
+/** Sem login, a tela inicial mostra só uma amostra; o resto pede cadastro. */
+const LIMITE_VISITANTE = 5;
+
 export default function InicioScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { session } = useAuth();
 
   const [categorias, setCategorias] = useState<Category[]>([]);
   const [prestadores, setPrestadores] = useState<ProviderWithRating[]>([]);
@@ -92,10 +97,15 @@ export default function InicioScreen() {
 
   const plural = filtrados.length !== 1;
 
+  // Visitante (sem login) vê só uma amostra; o resto pede cadastro.
+  const bloqueado = !session;
+  const visiveis = bloqueado ? filtrados.slice(0, LIMITE_VISITANTE) : filtrados;
+  const restantes = filtrados.length - visiveis.length;
+
   return (
     <AppBackground>
       <FlatList
-        data={filtrados}
+        data={visiveis}
         keyExtractor={(p) => p.id}
         renderItem={({ item }) => (
           <View style={styles.itemWrapper}>
@@ -159,6 +169,10 @@ export default function InicioScreen() {
                 <ActivityIndicator color={colors.green} style={styles.loading} />
               ) : erro ? (
                 <Text style={styles.erro}>{erro}</Text>
+              ) : restantes > 0 ? (
+                <Text style={styles.contador}>
+                  Mostrando {visiveis.length} de {filtrados.length} prestadores
+                </Text>
               ) : (
                 <Text style={styles.contador}>
                   {filtrados.length} prestador{plural ? 'es' : ''} encontrado{plural ? 's' : ''}
@@ -166,6 +180,23 @@ export default function InicioScreen() {
               )}
             </View>
           </View>
+        }
+        ListFooterComponent={
+          restantes > 0 ? (
+            <View style={styles.gateWrapper}>
+              <View style={styles.gateCard}>
+                <Text style={styles.gateTitulo}>
+                  Tem mais {restantes} prestador{restantes !== 1 ? 'es' : ''} pra você
+                </Text>
+                <Text style={styles.gateTexto}>
+                  Crie sua conta grátis para ver todos os prestadores e falar no WhatsApp.
+                </Text>
+                <Pressable onPress={() => router.push('/auth/login')} style={styles.gateBotao}>
+                  <Text style={styles.gateBotaoTexto}>Criar conta grátis</Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : null
         }
         ListEmptyComponent={!carregando && !erro ? <EmptyState /> : null}
       />
@@ -277,6 +308,49 @@ const styles = StyleSheet.create({
   },
   itemWrapper: {
     paddingHorizontal: 20,
+  },
+  gateWrapper: {
+    paddingHorizontal: 20,
+    marginTop: 8,
+  },
+  gateCard: {
+    backgroundColor: colors.green,
+    borderRadius: radius.cardLg,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: colors.green,
+    shadowOpacity: 0.25,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
+  },
+  gateTitulo: {
+    fontFamily: fonts.displayHeavy,
+    fontSize: 18,
+    color: colors.white,
+    textAlign: 'center',
+  },
+  gateTexto: {
+    fontFamily: fonts.body,
+    fontSize: 13.5,
+    lineHeight: 20,
+    color: colors.onGreen,
+    textAlign: 'center',
+    marginTop: 6,
+    marginBottom: 16,
+  },
+  gateBotao: {
+    backgroundColor: colors.white,
+    borderRadius: radius.input,
+    paddingVertical: 13,
+    paddingHorizontal: 28,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+  },
+  gateBotaoTexto: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 15,
+    color: colors.green,
   },
   modalFundo: {
     flex: 1,
